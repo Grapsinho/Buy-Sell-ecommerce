@@ -8,15 +8,15 @@ def set_secure_jwt_cookie(response, access_token, refresh_token):
         key='access_token',
         value=access_token,
         httponly=True,
-        secure=False,
-        samesite='Lax',
+        secure=True,
+        samesite='None',
         max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds()
     )
     response.set_cookie(
         key='refresh_token',
         value=refresh_token,
         httponly=True,
-        secure=False,
-        samesite='Lax',
+        secure=True,
+        samesite='None',
         max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds()
     )
