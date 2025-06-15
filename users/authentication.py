@@ -127,6 +127,45 @@ class JWTAuthMixin:
             )
         
 
+class OptionalJWTAuthentication(JWTAuthentication):
+    """
+    Like JWTAuthentication, but never raises on missing/invalid tokens—
+    just returns None so DRF falls back to AnonymousUser.
+    """
+
+    def authenticate(self, request):
+        access_token = request.COOKIES.get("access_token")
+
+        # 1) No cookie?  → silently skip authentication
+        if not access_token:
+            return None
+
+        # 2) Try decoding; if anything goes wrong, just log and skip
+        try:
+            token = AccessToken(access_token)
+            user_id = token.get("user_id")
+            if not user_id:
+                logger.debug("JWT present but missing user_id claim.")
+                return None
+
+            try:
+                user = User.objects.get(id=user_id)
+            except ObjectDoesNotExist:
+                logger.debug(f"Token had bad user_id={user_id}")
+                return None
+
+            return (user, None)
+
+        except TokenError as e:
+            # expired / invalid token → log, but don’t break the request
+            logger.debug(f"TokenError in OptionalJWTAuthentication: {e}")
+            return None
+        except Exception as e:
+            # any other decode / DB error → log, silently skip
+            logger.error(f"Unexpected error in OptionalJWTAuthentication: {e}")
+            return None
+
+
 # class IsAuthenticatedWithJWT(BasePermission):
 #     """
 #     Custom permission to authenticate users using JWT stored in HTTP-only cookies.

@@ -27,7 +27,7 @@ from .serializers import (
 )
 from .filters import ProductFilter
 from .pagination import ProductPagination
-from users.authentication import JWTAuthentication
+from users.authentication import JWTAuthentication, OptionalJWTAuthentication
 from .permissions import IsOwnerOrAdmin
 from utils.product_search import apply_full_text_search, apply_active_filter
 
@@ -196,7 +196,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_authenticators(self):
         if self.request and self.request.method == 'GET':
-            return []  # Public access for GET requests.
+            return [OptionalJWTAuthentication()]
         return [JWTAuthentication()]
 
     def get_permissions(self):
@@ -239,7 +239,6 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         return queryset
 
-    @method_decorator(vary_on_headers('Authorization'))
     @method_decorator(cache_page(60 * 5, key_prefix="product_management:product_list"), name="list")
     def list(self, request, *args, **kwargs):
         filtered = self.filter_queryset(self.get_queryset())
