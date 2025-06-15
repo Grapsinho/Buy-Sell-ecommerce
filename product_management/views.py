@@ -232,7 +232,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         # Apply full-text search (if applicable).
         queryset = apply_full_text_search(queryset, self.request)
 
-        return queryset
+        return queryset.exclude(seller=self.request.user)
 
     @method_decorator(cache_page(60 * 5, key_prefix="product_management:product_list"), name="list")
     def list(self, request, *args, **kwargs):
