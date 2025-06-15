@@ -2,6 +2,7 @@ from django.db import transaction
 from django.db.models import Prefetch, Max
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 
 from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -238,16 +239,18 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    @method_decorator(vary_on_headers('Authorization'))
     @method_decorator(cache_page(60 * 5, key_prefix="product_management:product_list"), name="list")
     def list(self, request, *args, **kwargs):
-        filtered_queryset = self.filter_queryset(self.get_queryset())
-        aggregated = filtered_queryset.aggregate(max_price=Max('price'))
-        max_price = aggregated.get('max_price') or 0.1
+        filtered = self.filter_queryset(self.get_queryset())
 
-        response = super().list(request, *args, **kwargs)
-        response.data['price_range'] = {"min_price": 0.1, "max_price": max_price}
+        # Compute extra metadata
+        agg = filtered.aggregate(max_price=Max('price'))
+        max_price = agg.get('max_price') or 0.1
 
-        return response
+        resp = super().list(request, *args, **kwargs)
+        resp.data['price_range'] = {"min_price": 0.1, "max_price": max_price}
+        return resp
 
     def perform_create(self, serializer):
         serializer.save(seller=self.request.user)
