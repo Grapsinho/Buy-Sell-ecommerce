@@ -22,3 +22,9 @@ Category.objects.rebuild()
 მოკლედ როცა ვქმნი ახალ დატაბეისს: კატეგორიები, პროდუქტები, პროდუქტის ფოტოები, სუპერ იუზერი, შიპინგ მეთოდი
 
 ესენი მჭირდება ხოლმე.
+
+1) https://buy-sell-ecommerce.onrender.com/users/create-superuser
+
+2) https://buy-sell-ecommerce.onrender.com/products/load-parent-categories/
+3) https://buy-sell-ecommerce.onrender.com/products/load-child-categories/
+4) https://buy-sell-ecommerce.onrender.com/products/rebuild-categories/
