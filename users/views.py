@@ -99,11 +99,14 @@ class EmailConfirmationView(APIView):
         )
         from_email = settings.EMAIL_HOST_USER
 
+        import traceback
+
         try:
             send_mail(subject, text_content, from_email, [email])
             logger.info(f"Confirmation code sent to {email}")
         except Exception as e:
             logger.error(f"Failed to send email to {email}: {str(e)}")
+            logger.error("Full traceback:\n" + traceback.format_exc())
 
             return Response({"detail": "Failed to send email. Try again later."},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
